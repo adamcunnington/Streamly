@@ -17,7 +17,7 @@ setuptools.setup(
     license=license,
     long_description=readme,
     name="Streamly",
-    packages=setuptools.find_packages(exclude=("tests")),
+    py_modules=["streamly"],
     url="https://github.com/adamcunnington/Streamly",
     version="0.1"
 )
