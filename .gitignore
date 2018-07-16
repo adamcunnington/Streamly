@@ -114,4 +114,10 @@ venv.bak/
 # End of https://www.gitignore.io/api/python
 
 ### CUSTOM ###
+
+# PyCharm
 .idea/
+
+# Pipenv - as Streamly is a library, not an application
+Pipfile
+Pipfile.lock
