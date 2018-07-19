@@ -14,7 +14,7 @@ class Stream:
 
 
 class Streamly:
-    def __init__(self, streams, header_row_identifier=b"", new_line_identifier=b"\n", footer_identifier=None,
+    def __init__(self, *streams, header_row_identifier=b"", new_line_identifier=b"\n", footer_identifier=None,
                  retain_first_header_row=True):
         if not streams:
             raise ValueError("there must be at least one stream")
