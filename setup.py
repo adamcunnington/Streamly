@@ -13,7 +13,6 @@ setuptools.setup(
     author="Adam Cunnington",
     author_email="adamcunnington.info@gmail.com",
     description="",
-    install_requires=[],
     license=license,
     long_description=readme,
     name="Streamly",
