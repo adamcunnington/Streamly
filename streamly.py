@@ -14,7 +14,7 @@ class Stream:
 
 
 class Streamly:
-    def __init__(self, *streams, header_row_identifier=b"", new_line_identifier=b"\n", footer_identifier=None,
+    def __init__(self, streams, header_row_identifier=b"", new_line_identifier=b"\n", footer_identifier=None,
                  retain_first_header_row=True):
         if not streams:
             raise ValueError("there must be at least one stream")
@@ -36,12 +36,6 @@ class Streamly:
         self._bytes_read_ahead = b""
         self._bytes_backlog = b""
 
-    @staticmethod
-    def _read(stream, size):
-        _bytes = stream["stream"].read(size)
-        stream["bytes_read"] += len(_bytes)
-        return _bytes
-
     @property
     def contains_footer(self):
         return self.footer_identifier is not None
@@ -55,16 +49,12 @@ class Streamly:
         return self.streams[self.current_stream_index]
 
     @property
-    def is_first_stream(self):
-        return self.current_stream_index == 0
-
-    @property
-    def footer_found(self):
-        return self.current_stream["footer_found"]
-
-    @property
     def header_found(self):
         return self.current_stream["header_found"] and self.current_stream["header_row_found"]
+
+    @property
+    def is_first_stream(self):
+        return self.current_stream_index == 0
 
     @property
     def is_last_stream(self):
@@ -78,13 +68,19 @@ class Streamly:
             self.current_stream_index += 1
 
     def _footer_check_needed(self):
-        return self.contains_footer and not self.footer_found
+        return self.contains_footer and not self.current_stream["footer_found"]
 
     def _header_check_needed(self):
         return self.contains_header_row and not self.header_found
 
     def _log_progress(self):
         pass
+
+    def _read(self, size):
+        current_stream = self.current_stream
+        _bytes = current_stream["stream"].read(size)  # bytes is a builtin name
+        current_stream["bytes_read"] += len(_bytes)
+        return _bytes
 
     def _remove_footer(self, _bytes, max_size):  # bytes is a builtin name
         index = _bytes.find(self.footer_identifier)
@@ -133,7 +129,7 @@ class Streamly:
                 # large volumes of reads needed, i.e. perhaps we're still trying to identify where the header ends,
                 # constantly evaluating just 5 additional bytes at a time. Therefore, read at least the _MIN_READ_SIZE.
                 # Any bytes read ahead that won't be returned just now will be saved for a subsequent read.
-                raw_bytes = self._read(self.current_stream, max(size_remaining, _MIN_READ_SIZE))
+                raw_bytes = self._read(max(size_remaining, _MIN_READ_SIZE))
                 # There's no point doing checks for the header and footer if there are no bytes left to read as the
                 # result will be the same as the last iteration of the loop.
                 if raw_bytes:
