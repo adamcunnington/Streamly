@@ -13,8 +13,8 @@ def _calc_end_of_prev_read(_bytes, identifier):  # bytes is a builtin name
     return _bytes[-(identifier_length - 1):] if identifier_length > 1 else b""
 
 
-def _chop(iterable, at_index):
-    return iterable[:at_index], iterable[at_index:]
+def _chop(sequence, at_index):
+    return sequence[:at_index], sequence[at_index:]
 
 
 class Stream:
