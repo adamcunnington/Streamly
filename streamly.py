@@ -8,6 +8,15 @@ _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
 
+def _calc_end_of_prev_read(_bytes, identifier):  # bytes is a builtin name
+    identifier_length = len(identifier)
+    return _bytes[-(identifier_length - 1):] if identifier_length > 1 else b""
+
+
+def _chop(iterable, at_index):
+    return iterable[:at_index], iterable[at_index:]
+
+
 class Stream:
     def __init__(self, stream, length):
         self.stream = stream
@@ -40,15 +49,6 @@ class Streamly:
         self._end_of_prev_read = b""
         self._bytes_read_ahead = b""
         self._bytes_backlog = b""
-
-    @staticmethod
-    def _calc_end_of_prev_read(_bytes, identifier):  # bytes is a builtin name
-        identifier_length = len(identifier)
-        return _bytes[-(identifier_length - 1):] if identifier_length > 1 else b""
-
-    @staticmethod
-    def _chop(iterable, at_index):
-        return iterable[:at_index], iterable[at_index:]
 
     @property
     def current_stream(self):
@@ -112,10 +112,10 @@ class Streamly:
         index = raw_bytes.find(self.footer_identifier)
         if index == -1:
             # The footer was not found but if it's multiple bytes long, it's possible that it could be at the end of
-            # raw_bytes this would not be known to us until subsequent read(s). Unlike in the case of the header removal
-            # where we just return an empty string if the header has not yet been started, we are trying to return data
-            # up until the footer starts and so we must know when that is! Therefore, read some more data - specifically
-            # 1 less than the length of the identifier.
+            # raw_bytes but this would not be known to us until subsequent read(s). Unlike in the case of the header
+            # removal here we just return an empty string if the header has not yet been started, we are trying to
+            # return data up until the footer starts and so we must know when that is! Therefore, read some more data -
+            # specifically 1 less than the length of the identifier.
             bytes_read_ahead = self._read(len(self.footer_identifier) - 1)
             index = (raw_bytes + bytes_read_ahead).find(self.footer_identifier)
             if index == -1:
@@ -131,7 +131,7 @@ class Streamly:
             # The bytes to return could be longer than the max size requested because the raw_bytes passed is very
             # likely to have started with a read ahead from the previous call and the match may have occurred in that
             # prepend.
-            processed_bytes, bytes_read_ahead = self._chop(processed_bytes, max_size)
+            processed_bytes, bytes_read_ahead = _chop(processed_bytes, max_size)
         return processed_bytes, bytes_read_ahead
 
     def _remove_header(self, raw_bytes, max_size):
@@ -145,7 +145,7 @@ class Streamly:
                 # actually be at the end of raw_bytes but this is not known to us until subsequent read(s) where we
                 # have enough bytes to evaluate. Therefore, return the end of raw_bytes - specifically 1 less than the
                 # length of the identifier.
-                return self._calc_end_of_prev_read(raw_bytes, self.header_row_identifier), b"", b""
+                return _calc_end_of_prev_read(raw_bytes, self.header_row_identifier), b"", b""
             current_stream["header_row_found"] = True
             start = index
         # The header row has now been found but if this is not the first stream or the user does not want to retain the
@@ -158,7 +158,7 @@ class Streamly:
                 # identifier does start towards the end of raw_bytes but overlaps into the next read. Note that
                 # _calc_end_of_prev_read will return an empty string if the identifier was only 1 byte long as the
                 # overlap scenario is then not possible.
-                return self._calc_end_of_prev_read(raw_bytes, self.header_row_identifier), b"", b""
+                return _calc_end_of_prev_read(raw_bytes, self.header_row_identifier), b"", b""
             self._seeking_header_row_end = False
             # Unlike in the case of the header row identifier, we don't want to start returning from the found byte
             # but from 1 byte after.
@@ -173,7 +173,7 @@ class Streamly:
         if len(processed_bytes) > max_size:
             # The bytes to return could be longer than the max size requested because the raw_bytes passed may have
             # included bytes from the end of the previous call and the match may have occurred within that prepend.
-            processed_bytes, bytes_read_ahead = self._chop(processed_bytes, max_size)
+            processed_bytes, bytes_read_ahead = _chop(processed_bytes, max_size)
         return b"", processed_bytes, bytes_read_ahead
 
     def read(self, size=8192):
@@ -188,7 +188,7 @@ class Streamly:
             if self._bytes_backlog:
                 # Bytes on the backlog must be prioritised. It's possible the stream is exhausted, and thus no more
                 # bytes to be read, but we need to return the backlog first.
-                processed_bytes, self._bytes_backlog = self._chop(self._bytes_backlog, size_remaining)
+                processed_bytes, self._bytes_backlog = _chop(self._bytes_backlog, size_remaining)
             elif self.end_reached:
                 # We now know that the backlog is empty and the end of the streams are reached. Therefore, we can break
                 # out of the loop and return to the caller but the penultimate time. Their subsequent call will be
