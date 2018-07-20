@@ -1,3 +1,14 @@
+"""Provide a wrapper for streams (aka file-like objects) that increases flexibility without costing efficiency.
+
+Include the following functionality during on-the-fly read operations:
+- Adjoining of multiple streams
+- Removal of header and footer data, identified by a value (e.g. string or byte string)
+- Logging of read progress (accessible through logging.getLogger("streamly"))
+- Guaranteed read size (where the data is not yet exhausted)
+
+"""
+
+
 import logging
 
 
@@ -18,14 +29,34 @@ def _chop(sequence, at_index):
 
 
 class Stream:
+    """Provide a simple API (stub!) to represent a stream resource that has a known length for use with Streamly."""
+
     def __init__(self, stream, length):
+        """Initialise a stream object with a length.
+
+        If the length is unknown, just pass the raw stream object directly to Streamly.
+
+        :param stream: file-like object
+        :param length: integer length
+        """
         self.stream = stream
         self.length = length
 
 
 class Streamly:
+    """Provide a wrapper for streams (aka file-like objects) that increases flexibility without costing efficiency."""
+
     def __init__(self, *streams, header_row_identifier=b"", header_row_end_identifier=b"\n", footer_identifier=None,
                  retain_first_header_row=True):
+        """Initialise a Stream wrapper object with header and footer identifiers to be utilised during the read process.
+
+        :param streams: one or more stream objects to be read. If the object does not implement a stream attribute, the
+        object itself is assumed to be the stream.
+        :param header_row_identifier:
+        :param header_row_end_identifier:
+        :param footer_identifier:
+        :param retain_first_header_row:
+        """
         if not streams:
             raise ValueError("there must be at least one stream")
         self.streams = [{
