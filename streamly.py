@@ -1,4 +1,3 @@
-import time
 """Provide a wrapper for streams (aka file-like objects) that increases flexibility without costing efficiency.
 
 Include the following functionality during on-the-fly read operations:
@@ -246,7 +245,7 @@ class Streamly:
         data_to_return = self._empty
         total_size = 0
         while total_size < size:
-            size_remaining = size - total_size - len(self._data_read_ahead)
+            size_remaining = size - total_size
             if self._data_backlog:
                 _logger.debug("Data found on the backlog")
                 # Data on the backlog must be prioritised. It's possible the stream is exhausted, and thus no more data
@@ -260,13 +259,12 @@ class Streamly:
                 break
             else:
                 processed_data = self._empty
-                # If there are a small amount of data left to read, we could enter in to a situation where there are a
+                # If there is a small amount of data left to read, we could enter in to a situation where there are a
                 # large volumes of reads needed, i.e. perhaps we're still trying to identify where the header ends,
                 # constantly evaluating a small amount of data each time. Therefore, read at least the _MIN_READ_SIZE.
                 # Any data read ahead that won't be returned just now will be saved for a subsequent read.
                 _logger.debug("Reading raw data")
-                raw_data = self._read(max(size_remaining, _MIN_READ_SIZE))
-                _logger.debug(len(raw_data))
+                raw_data = self._read(max(size_remaining - len(self._data_read_ahead), _MIN_READ_SIZE))
                 # There's no point doing checks for the header and footer if there is no data left to read as the
                 # result will be the same as the last iteration of the loop.
                 if raw_data:
@@ -289,8 +287,6 @@ class Streamly:
                     # larger than the size_remaining and so, save it to a backlog that will be returned in subsequent
                     # calls.
                     self._data_backlog = self._data_read_ahead
-                print(repr(self._end_of_prev_read), repr(processed_data), repr(self._data_read_ahead), repr(self._data_backlog))
-            time.sleep(2)
             total_size += len(processed_data)
             data_to_return += processed_data
         return data_to_return
