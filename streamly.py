@@ -74,7 +74,7 @@ class Streamly:
             "length": getattr(stream, "length", None)
         } for stream in streams]
         self.binary = binary
-        self._empty = b"" if binary else ""
+        self._empty = b"" if self.binary else ""
         self.header_row_identifier = header_row_identifier if header_row_identifier is not _EMPTY else self._empty
         if header_row_end_identifier is _LINE_FEED:
             self.header_row_end_identifier = b"\n" if self.binary else "\n"
@@ -220,7 +220,7 @@ class Streamly:
             # The data to return could be longer than the max size requested because the raw_data passed may have
             # included data from the end of the previous call and the match may have occurred within that prepend.
             processed_data, data_read_ahead = _chop(processed_data, max_size)
-        return b"", processed_data, data_read_ahead
+        return self._empty, processed_data, data_read_ahead
 
     def read(self, size=8192):
         """Read from the underlying streams, remembering the position of the previous read as per regular read
@@ -240,35 +240,45 @@ class Streamly:
         data_to_return = self._empty
         total_size = 0
         while total_size < size:
-            size_remaining = size - total_size
+            size_remaining = size - total_size - len(self._data_read_ahead)
             if self._data_backlog:
+                _logger.debug("Data found on the backlog")
                 # Data on the backlog must be prioritised. It's possible the stream is exhausted, and thus no more data
                 # to be read, but we need to return the backlog first.
                 processed_data, self._data_backlog = _chop(self._data_backlog, size_remaining)
             elif self.end_reached:
+                _logger.debug("The end of the last stream has been reached")
                 # We now know that the backlog is empty and the end of the streams are reached. Therefore, we can break
                 # out of the loop and return to the caller but the penultimate time. Their subsequent call will be
                 # caught by the top-level if statement.
                 break
             else:
-                processed_data = b""
+                processed_data = self._empty
                 # If there are a small amount of data left to read, we could enter in to a situation where there are a
                 # large volumes of reads needed, i.e. perhaps we're still trying to identify where the header ends,
                 # constantly evaluating a small amount of data each time. Therefore, read at least the _MIN_READ_SIZE.
                 # Any data read ahead that won't be returned just now will be saved for a subsequent read.
+                _logger.debug("Reading raw data")
                 raw_data = self._read(max(size_remaining, _MIN_READ_SIZE))
                 # There's no point doing checks for the header and footer if there is no data left to read as the
                 # result will be the same as the last iteration of the loop.
                 if raw_data:
                     if self._header_check_needed():
+                        _logger.debug("Looking for header...")
                         self._end_of_prev_read, processed_data, self._data_read_ahead = self._remove_header(
                             self._end_of_prev_read + raw_data, size_remaining)
-                    # Don't look for the footer unless the header is found. Can't do an else if as it might have only
-                    # just been found.
+                    else:
+                        # Given the size of the raw_data read takes into account the length of self._data_read_ahead,
+                        # we know that self._data_read_ahead + raw_data won't be too long and so we don't need a call to
+                        # _chop
+                        processed_data = self._data_read_ahead + raw_data
+                    # Don't look for the footer unless the header is found. Can't do an else if as the header may have
+                    # only just been found.
                     if not self._header_check_needed() and self._footer_check_needed():
-                        processed_data, self._data_read_ahead = self._remove_footer(self._data_read_ahead + raw_data,
-                                                                                    size_remaining)
+                        _logger.debug("Looking for footer...")
+                        processed_data, self._data_read_ahead = self._remove_footer(processed_data, size_remaining)
                 else:
+                    _logger.debug("Underlying stream returned no data")
                     self._end_stream()
                     # We know that the stream we are reading from is exhausted but there could be data that was read
                     # ahead in the previous footer check. We know that this data is ready to be returned but it could be
