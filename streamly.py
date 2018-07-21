@@ -1,3 +1,4 @@
+import time
 """Provide a wrapper for streams (aka file-like objects) that increases flexibility without costing efficiency.
 
 Include the following functionality during on-the-fly read operations:
@@ -145,14 +146,16 @@ class Streamly:
         _logger.info("Stream Progress: %s/%s (%s%%)" %(length_read, length or "?", progress))
         total_progress = "?" if self.total_length is None else "%.2f%%" % ((self.total_length_read /
                                                                             self.total_length) * 100)
-        _logger.info("Overall Progress: %s/%s (%s%%)" %(self.total_length_read, self.total_length or "?",
-                                                        total_progress))
+        if self.total_streams > 1:
+            _logger.info("Overall Progress: %s/%s (%s%%)" %(self.total_length_read, self.total_length or "?",
+                                                            total_progress))
 
     def _read(self, size):
         # Save current_stream so property does not need to be evaluated more than once
         current_stream = self.current_stream
         data = current_stream["stream"].read(size)
         current_stream["length_read"] += len(data)
+        self._log_progress()
         return data
 
     def _remove_footer(self, raw_data, max_size):
@@ -193,6 +196,9 @@ class Streamly:
                 # identifier.
                 return self._calc_end_of_prev_read(raw_data, self.header_row_identifier), self._empty, self._empty
             current_stream["header_row_found"] = True
+            # Add the length of the header_row_identifier to get the index where the header row actually starts. This
+            # has the nice property of being 0 if the header row identifier was an empty string (i.e. start of stream)
+            index += len(self.header_row_identifier)
             start = index
         # The header row has now been found but if this is not the first stream or the user does not want to retain the
         # header row from the first stream, then we need to look for the line end.
@@ -204,11 +210,11 @@ class Streamly:
                 # identifier does start towards the end of raw_data but overlaps into the next read. Note that
                 # _calc_end_of_prev_read will return an empty byte string (or empty string) if the identifier's length
                 # was 1 as the overlap scenario is then not possible.
-                return self._calc_end_of_prev_read(raw_data, self.header_row_identifier), self._empty, self._empty
+                return self._calc_end_of_prev_read(raw_data, self.header_row_end_identifier), self._empty, self._empty
             self._seeking_header_row_end = False
-            # Unlike in the case of the header row identifier, we don't want to start returning from the found value
-            # but from just after.
-            index += -1
+            # Like in the case of the header_row_identifier, add the length of the identifier to get the index of where
+            # the data actually starts.
+            index += len(self.header_row_end_identifier)
         # Note that with regards to code paths, technically speaking, this index may be referenced before it is
         # assigned. However, this is not possible based on the logic and if it does happen, it's a bug and we want a
         # NameError.
@@ -260,6 +266,7 @@ class Streamly:
                 # Any data read ahead that won't be returned just now will be saved for a subsequent read.
                 _logger.debug("Reading raw data")
                 raw_data = self._read(max(size_remaining, _MIN_READ_SIZE))
+                _logger.debug(len(raw_data))
                 # There's no point doing checks for the header and footer if there is no data left to read as the
                 # result will be the same as the last iteration of the loop.
                 if raw_data:
@@ -271,7 +278,7 @@ class Streamly:
                         # Given the size of the raw_data read takes into account the length of self._data_read_ahead,
                         # we know that self._data_read_ahead + raw_data won't be too long and so we don't need a call to
                         # _chop
-                        processed_data = self._data_read_ahead + raw_data
+                        processed_data, self._data_read_ahead = _chop(self._data_read_ahead + raw_data, size_remaining)
                     # Don't look for the footer unless the header is found. Can't do an else if as the header may have
                     # only just been found.
                     if not self._header_check_needed() and self._footer_check_needed():
@@ -285,6 +292,8 @@ class Streamly:
                     # larger than the size_remaining and so, save it to a backlog that will be returned in subsequent
                     # calls.
                     self._data_backlog = self._data_read_ahead
+                print(repr(self._end_of_prev_read), repr(processed_data), repr(self._data_read_ahead), repr(self._data_backlog))
+            time.sleep(2)
             total_size += len(processed_data)
             data_to_return += processed_data
         return data_to_return
