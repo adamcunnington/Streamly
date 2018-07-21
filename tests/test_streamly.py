@@ -18,13 +18,10 @@ import streamly
     (["bar"], -4, [], ["bar"]),
 ))
 def test_chop(sequence, at_index, expected_part1, expected_part2):
+    # _chop now belongs to stream.Streamly so this needs refactoring!
     part1, part2 = streamly._chop(sequence, at_index)
-    if (at_index >= 0) and (at_index <= len(sequence)):
-        assert len(part1) == at_index
-        assert len(part2) == len(sequence) - at_index
     assert part1 == expected_part1
     assert part2 == expected_part2
-    assert part1 + part2 == sequence
 
 
 def test_stream():
