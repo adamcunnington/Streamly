@@ -275,9 +275,6 @@ class Streamly:
                         self._end_of_prev_read, processed_data, self._data_read_ahead = self._remove_header(
                             self._end_of_prev_read + raw_data, size_remaining)
                     else:
-                        # Given the size of the raw_data read takes into account the length of self._data_read_ahead,
-                        # we know that self._data_read_ahead + raw_data won't be too long and so we don't need a call to
-                        # _chop
                         processed_data, self._data_read_ahead = _chop(self._data_read_ahead + raw_data, size_remaining)
                     # Don't look for the footer unless the header is found. Can't do an else if as the header may have
                     # only just been found.
