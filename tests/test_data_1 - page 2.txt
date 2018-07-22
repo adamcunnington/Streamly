@@ -1,13 +1,6 @@
-some
-random
-crap
-foo, bar\r\n
-so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap; so much random crap;
-
-
-Report Fields:
+Fields:
 a,very,simple,csv,file
-1,2,3,4,5
+start,of,the,second,file
 1,2,3,4,5
 1,2,3,4,5
 1,2,3,4,5
