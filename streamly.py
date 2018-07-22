@@ -259,12 +259,13 @@ class Streamly:
                 break
             else:
                 processed_data = self._empty
+                _logger.debug("Reading raw data")
+                size_to_read = size_remaining - len(self._data_read_ahead) - len(self._end_of_prev_read)
                 # If there is a small amount of data left to read, we could enter in to a situation where there are a
                 # large volumes of reads needed, i.e. perhaps we're still trying to identify where the header ends,
                 # constantly evaluating a small amount of data each time. Therefore, read at least the _MIN_READ_SIZE.
                 # Any data read ahead that won't be returned just now will be saved for a subsequent read.
-                _logger.debug("Reading raw data")
-                raw_data = self._read(max(size_remaining - len(self._data_read_ahead), _MIN_READ_SIZE))
+                raw_data = self._read(max(size_to_read, _MIN_READ_SIZE))
                 # There's no point doing checks for the header and footer if there is no data left to read as the
                 # result will be the same as the last iteration of the loop.
                 if raw_data:
