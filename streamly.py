@@ -21,7 +21,7 @@ _logger.addHandler(logging.NullHandler())
 
 
 class Stream:
-    """Provide a simple object (stub!) to represent a stream resource that has a known length for use with Streamly."""
+    """Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`."""
 
     def __init__(self, stream, length):
         """Initialise a stream object with a length.
@@ -43,7 +43,8 @@ class Streamly:
         """Initialise a Stream wrapper object with header and footer identifiers to be utilised during the read process.
 
         :param streams: one or more stream objects to be read. Each object can either be a stream object or some sort of
-        container object that implements a stream attribute and optionally, a length attribute. i.e. streamly.Stream.
+        container object that implements a stream attribute and optionally, a length attribute. i.e.
+        :class:`streamly.Stream`.
         :param binary: whether or not the underlying streams return bytes when read. If it returns text, set this to
         False. Defaults to True.
         :param header_row_identifier: the value to use to identify where the header row starts. If reading the stream
@@ -219,7 +220,7 @@ class Streamly:
         return an empty byte string or empty string depending on self.binary
 
         :param size: the length to return
-        :return: either a byte string or string depending on what the underlying streams return when read
+        :returns: either a byte string or string depending on what the underlying streams return when read
         """
         if self.end_reached and not self._data_backlog:
             # The end of the streams may be reached but if there is data in the backlog, there is still work to be
