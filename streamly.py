@@ -9,7 +9,6 @@ Include the following functionality during on the fly read operations:
 """
 
 
-import collections
 import logging
 
 
