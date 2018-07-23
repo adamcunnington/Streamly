@@ -16,8 +16,8 @@ Installation
 
 **Requires** `Python 3.1+ <https://www.python.org/downloads/>`_
 
-Using `pipenv <https://packaging.python.org/tutorials/managing-dependencies/#installing-pipenv>`_
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+With `pipenv <https://packaging.python.org/tutorials/managing-dependencies>`_
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install:
 
@@ -31,7 +31,7 @@ Install:
 
     pipenv update streamly
 
-Using `pip <https://pip.pypa.io/en/stable/quickstart/>`_
+With `pip <https://pip.pypa.io/en/stable/quickstart/>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install & Update:
