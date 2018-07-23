@@ -28,7 +28,7 @@ Positional Arguments
 
 A stream can be anything with a read method that remembers it's position between reads. Typically, this is an OS-level file or data from a network socket such as a HTTP response but Streamly does not care! The streams can either be all text or all bytes.
 
-In order for Streamly to meaningfully log progress, it must know the total length of the stream(s). This is not required for streamly to work but if the length is known (i.e. the web response includes a Content-Length header), you can create a :ref:`streamly.Stream <stream>` object, and then pass that as an arg to \*streams. For example, if the underlying stream object is a `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_ stream::
+In order for Streamly to meaningfully :ref:`log progress <logging>`, it must know the total length of the stream(s). This is not required for streamly to work but if the length is known (i.e. the web response includes a Content-Length header), you can create a :ref:`streamly.Stream <stream>` object, and then pass that as an arg to \*streams. For example, if the underlying stream object is a `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_ stream::
 
     >>> my_stream = streamly.Stream(raw_stream.raw,
                                     raw_stream.headers["Content-Type"])
@@ -62,6 +62,7 @@ The following keyword arguments impact the behaviour of the header and footer id
 
     If you wish to avoid this translation behaviour, you can pass ``newline=""`` to open().
 
+.. logging::
 
 Logging
 -------
