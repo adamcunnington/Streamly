@@ -13,6 +13,7 @@ import collections
 import logging
 
 
+# Singleton sentinel values for parameter defaults
 _EMPTY = object()
 _LINE_FEED = object()
 
