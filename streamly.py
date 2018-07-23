@@ -9,6 +9,7 @@ Include the following functionality during on-the-fly read operations:
 """
 
 
+import collections
 import logging
 
 
@@ -20,19 +21,8 @@ _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
 
-class Stream:
-    """Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`."""
-
-    def __init__(self, stream, length):
-        """Initialise a stream object with a length.
-
-        If the length is unknown, just pass the raw stream object directly to Streamly.
-
-        :param stream: file-like object
-        :param length: integer length
-        """
-        self.stream = stream
-        self.length = length
+#: Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`.
+Stream = collections.namedtuple("Stream", ("stream", "length"))
 
 
 class Streamly:
@@ -90,18 +80,22 @@ class Streamly:
 
     @property
     def current_stream(self):
+        """Return the stream details as a dict that will be referenced on the next read operation."""
         return self.streams[self.current_stream_index]
 
     @property
     def is_first_stream(self):
+        """Return True if the current stream is the first stream."""
         return self.current_stream_index == 0
 
     @property
     def is_last_stream(self):
+        """Return True if the current stream is the last stream."""
         return self.current_stream_index == self.total_streams - 1
 
     @property
     def total_length_read(self):
+        """Return the total length read across all the streams."""
         return sum(stream["length_read"] for stream in self.streams)
 
     def _calc_end_of_prev_read(self, data, identifier):
@@ -136,19 +130,20 @@ class Streamly:
     def _header_check_needed(self):
         return self.contains_header_row and (not self.current_stream["header_row_found"] or
                                              self._seeking_header_row_end)
+
     def _log_progress(self):
         # Save current_stream so property does not need to be evaluated more than once
         current_stream = self.current_stream
-        _logger.info("Reading Stream %s/%s" % (self.current_stream_index + 1, self.total_streams))
+        _logger.info("Reading Stream %s/%s", self.current_stream_index + 1, self.total_streams)
         length_read = current_stream["length_read"]
         length = current_stream["length"]
         progress = "?" if length is None else "%.2f%%" % ((length_read / length) * 100)
-        _logger.info("Stream Progress: %s/%s (%s%%)" %(length_read, length or "?", progress))
+        _logger.info("Stream Progress: %s/%s (%s%%)", length_read, length or "?", progress)
         total_progress = "?" if self.total_length is None else "%.2f%%" % ((self.total_length_read /
                                                                             self.total_length) * 100)
         if self.total_streams > 1:
-            _logger.info("Overall Progress: %s/%s (%s%%)" %(self.total_length_read, self.total_length or "?",
-                                                            total_progress))
+            _logger.info("Overall Progress: %s/%s (%s%%)", self.total_length_read, self.total_length or "?",
+                         total_progress)
 
     def _read(self, size):
         if size <= 0:
@@ -216,8 +211,8 @@ class Streamly:
     def read(self, size=8192):
         """Read incrementally from the underlying streams. Automatically handle the removal of headers and footers based
         on the instance properties and iterate through the underlying stream objects where there are more than one.
-        Always return data of length, size, unless the underlying streams are fully read. The subsequent read will
-        return an empty byte string or empty string depending on self.binary
+        Always return data of length, size, unless the underlying streams are exhausted. The subsequent read will return
+        an empty byte string or empty string depending on self.binary.
 
         :param size: the length to return
         :returns: either a byte string or string depending on what the underlying streams return when read
