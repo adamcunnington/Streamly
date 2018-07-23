@@ -10,11 +10,10 @@ Streamly solves this problem by handling the unwanted headers and footers on the
 
 Documentation: https://streamly.readthedocs.io
 
-
 Installation
 ------------
 
-**Requires `Python 3.1+ <https://www.python.org/downloads/>`_**
+**Requires** `Python 3.1+ <https://www.python.org/downloads/>`_
 
 Using `pipenv <https://packaging.python.org/tutorials/managing-dependencies/#installing-pipenv>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -39,7 +38,6 @@ Install & Update:
 .. code-block:: text
 
     pip install streamly --upgrade
-
 
 Example Usage
 -----
@@ -83,7 +81,6 @@ The below example writes a byte stream to a file, removing the unwanted header a
         while data:
             fp.write(data)
             data = wrapped_stream.read()
-
 
 Features
 --------
