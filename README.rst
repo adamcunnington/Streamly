@@ -4,7 +4,7 @@ Streamly
 
 Streamly is a very simple yet powerful wrapper for streams (file-like objects). It is primarily designed to help with the cleaning up of flat data during on the fly read operations.
 
-A typical use case that is especially prevalent with digital marketing data sources, is wanting to download/upload a web stream to some target location that expects clean, flat delimited data but the stream includes unwanted header and footer data. Developers often deal with this by loading the data as-is into an interim location and then opening the file and culling the unwanted leading and trailing lines. This approach works but limitations include: not easily reproducible; increases the complexity of the solution; assumes a storage component; inefficient with large data sets.
+A typical use case that is especially prevalent within digital marketing, is wanting to download/upload a web stream to some target location that expects clean, flat delimited data but the stream includes unwanted header and footer data. Developers often deal with this by loading the data as-is into an interim location and then opening the file and culling the unwanted leading and trailing lines. This approach works but limitations include: not easily reproducible; increases the complexity of the solution; assumes a storage component; inefficient with large data sets.
 
 Streamly solves this problem by handling the unwanted headers and footers on the fly in a highly efficient manner.
 
@@ -14,7 +14,7 @@ Documentation: https://streamly.readthedocs.io
 Installation
 ------------
 
-**Requires Python 3.1+**
+**Requires `Python 3.1+ <https://www.python.org/downloads/>`_**
 
 Using `pipenv <https://packaging.python.org/tutorials/managing-dependencies/#installing-pipenv>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -25,7 +25,7 @@ Install:
 
     pipenv install streamly --upgrade
 
-**Or** Update:
+**OR** Update:
 
 .. code-block:: text
 
@@ -75,7 +75,8 @@ The below example writes a byte stream to a file, removing the unwanted header a
     """
     )
 
-    wrapped_stream = streamly.Streamly(my_stream, header_row_identifier=b"Report Fields:\n", footer_identifier=b"Grand")
+    wrapped_stream = streamly.Streamly(my_stream, header_row_identifier=b"Report Fields:\n",
+                                       footer_identifier=b"Grand")
 
     with open("output.csv", "wb") as fp:
         data = wrapped_stream.read()
