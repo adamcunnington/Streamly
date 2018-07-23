@@ -6,12 +6,12 @@ name = "pypi"
 [packages]
 
 [dev-packages]
-sphinx = "*"
 pytest = "*"
 coverage = "*"
 "flake8" = "*"
 pylint = "*"
 pytest-cov = "*"
+sphinx = "*"
 
 [requires]
 python_version = "3.7"
