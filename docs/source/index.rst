@@ -24,7 +24,7 @@ Contents
 
    installation
    getting-started
-   understanding-read
+   examples
 
 .. toctree::
    :maxdepth: 2
