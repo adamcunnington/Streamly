@@ -24,7 +24,7 @@ Contents
 
    installation
    getting-started
-   read-logic
+   understanding-read
 
 .. toctree::
    :maxdepth: 2
