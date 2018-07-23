@@ -17,9 +17,8 @@ Using Streamly is incredibly simple and generally consists of 2 steps:
     #. Create a :ref:`streamly.Streamly <streamly>` object
     #. Replace occurrences of ``<old-stream>.read`` with ``<streamly-object>.read``
 
-
-Create a Streamly Object
-^^^^^^^^^^^^^^^^^^^^^^^^
+1. Create a Streamly Object
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 :ref:`Streamly <streamly>`'s constructor expects one or more stream positional argument followed by optional keyword arguments.
 
@@ -62,7 +61,34 @@ The following keyword arguments impact the behaviour of the header and footer id
 
     If you wish to avoid this translation behaviour, you can pass ``newline=""`` to open().
 
-.. logging::
+2. Replace Occurrences of .read()
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Very simply, wherever you were calling .read() on the raw stream, substitute the reference to the raw stream for the :ref:`streamly.Streamly <streamly>` object. For example, if you had the following code::
+
+    >>> data = raw_stream.read(8192)
+    >>> if data:
+    ...     with open("output.csv") as fp:
+    ...         while data:
+    ...             fp.write(data)
+    ...             data = raw_stream.read(8192)
+
+You would replace that with something like the following. Note that the first two lines are additions and the changes are highlighted:
+
+.. code-block:: python
+    :emphasize-lines: 4, 9
+
+    >>> import streamly
+    >>> wrapped_stream = streamly.Streamly(raw_stream)
+
+    >>> data = wrapped_stream.read(8192)
+    >>> if data:
+    ...     with open("output.csv") as fp:
+    ...         while data:
+    ...             fp.write(data)
+    ...             data = raw_stream.read(8192)
+
+.. _logging:
 
 Logging
 -------
