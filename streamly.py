@@ -1,6 +1,6 @@
 """Provide a wrapper for streams (file-like objects) that increases flexibility without costing efficiency.
 
-Include the following functionality during on-the-fly read operations:
+Include the following functionality during on the fly read operations:
 - Adjoining of multiple streams
 - Removal of header and footer data, identified by a value (e.g. byte string or string)
 - Logging of read progress
