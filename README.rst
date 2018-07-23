@@ -10,6 +10,7 @@ Streamly solves this problem by handling the unwanted headers and footers on the
 
 Documentation: https://streamly.readthedocs.io
 
+
 Installation
 ------------
 
@@ -38,6 +39,7 @@ Install & Update:
 .. code-block:: text
 
     pip install streamly --upgrade
+
 
 Example Usage
 -----
@@ -82,12 +84,14 @@ The below example writes a byte stream to a file, removing the unwanted header a
             fp.write(data)
             data = wrapped_stream.read()
 
+
 Features
 --------
 
 Includes the following functionality during on the fly read operations:
-- Adjoining of multiple streams
-- Removal of header and footer data, identified by a value (e.g. byte string or string)
-- Logging of read progress
-- Guaranteed read size (where the data is not yet exhausted)
-- Consistent API for streams returning byte strings or strings
+
+* Adjoining of multiple streams
+* Removal of header and footer data, identified by a value (e.g. byte string or string)
+* Logging of read progress
+* Guaranteed read size (where the data is not yet exhausted)
+* Consistent API for streams returning byte strings or strings
