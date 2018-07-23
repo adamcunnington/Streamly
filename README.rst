@@ -23,7 +23,7 @@ Install:
 
 .. code-block:: text
 
-    pipenv install streamly --upgrade
+    pipenv install streamly
 
 **OR** Update:
 
