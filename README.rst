@@ -16,26 +16,27 @@ Installation
 
 **Requires Python 3.1+**
 
-Using `pipenv <https://packaging.python.org/tutorials/managing-dependencies/#installing-pipenv>`
+Using `pipenv <https://packaging.python.org/tutorials/managing-dependencies/#installing-pipenv>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install:
+
 .. code-block:: text
 
     pipenv install streamly --upgrade
 
 **Or** Update:
 
-..code-block::text
+.. code-block:: text
 
     pipenv update streamly
 
-Using `pip <https://pip.pypa.io/en/stable/quickstart/>`
+Using `pip <https://pip.pypa.io/en/stable/quickstart/>`_
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Install & Update:
 
-..code-block::text
+.. code-block:: text
 
     pip install streamly --upgrade
 
@@ -45,7 +46,7 @@ Example Usage
 
 The below example writes a byte stream to a file, removing the unwanted header and footer details on the fly.
 
-..code-block:: python
+.. code-block:: python
 
     import io
 
