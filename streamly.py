@@ -13,43 +13,76 @@ import collections
 import logging
 
 
-# Singleton sentinel values for parameter defaults
-_EMPTY = object()
-_LINE_FEED = object()
+# Singleton sentinel values for parameter defaults. Use class rather than object() so Sphinx documents correctly.
+class _Sentinel:
+    pass
+
+_EMPTY = _Sentinel()
+_LINE_FEED = _Sentinel()
 
 
 _logger = logging.getLogger(__name__)
 _logger.addHandler(logging.NullHandler())
 
 
-#: Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`.
-Stream = collections.namedtuple("Stream", ("stream", "length"))
+class Stream:
+    """Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`.
+
+    If the length is unknown, just pass the raw stream object directly to Streamly.
+
+    :param stream: the file-like object
+    :param int length: the length of the stream
+    """
+
+    def __init__(self, stream, length):
+        """Initialise a stream object with a length."""
+        self.stream = stream
+        self.length = length
 
 
 class Streamly:
-    """Provide a wrapper for streams (aka file-like objects) that increases flexibility without costing efficiency."""
+    """Provide a wrapper for streams (aka file-like objects).
+
+    :param streams: one or more stream objects to be read. Each object can either be a stream object or some sort of
+        container object that implements a stream attribute and optionally, a length attribute. i.e.
+        :class:`streamly.Stream`.
+    :param bool binary: whether or not the underlying streams return bytes when read. If it returns text, set this to
+        ``False``. Defaults to ``True``.
+    :param header_row_identifier: the value to use to identify where the header row starts. If reading the stream
+        returns bytes, this should be a byte string. If there is no header, explicitly pass ``None``. Defaults to an
+        empty byte string or empty string depending on the value of binary. I.e. the header row is encountered at the
+        very start of the stream.
+    :param header_row_end_identifier: the value to use to identify where the header row ends. If reading the stream
+        returns bytes, this should be a byte string. Defaults to a line feed byte string or a line feed string character
+        depending on the value of binary.
+    :param footer_identifier: the value to use to identify where the footer starts. Defaults to ``None``, i.e. no
+        footer.
+    :param bool retain_first_header_row: whether or not the read method should retain the header row of the first
+        stream. Headers are removed from the second stream onwards regardless.
+    :raises: ValueError if no streams are passed.
+
+    :ivar bool binary: see Parameters.
+    :ivar bool contains_header_row: ``True`` if `header_row_identifier` is not ``None``.
+    :ivar bool contains_footer: ``True`` if `footer_identifier` is not ``None``.
+    :ivar dict current_stream: The stream details that will be referenced on the next read operation.
+    :ivar int current_stream_index: The index of the current stream that will be referenced on the next read operation.
+    :ivar bool end_reached: ``True`` if the final underlying stream has been exhausted.
+    :ivar footer_identifier: See Parameters.
+    :ivar header_row_identifier: See Parameters.
+    :ivar header_row_end_identifier: See Parameters.
+    :ivar bool is_first_stream: ``True`` if the current stream is the first stream.
+    :ivar bool is_last_stream: ``True`` if the current stream is the last stream.
+    :ivar bool retain_first_header_row: See Parameters.
+    :ivar list streams: See Parameters.
+    :ivar int total_length: The total length of all the streams. If any stream's length is unknown, this value will be
+        ``None``.
+    :ivar int total_length_read: The total length read across all the streams.
+    :ivar int total_streams: The amount of underlying streams.
+    """
 
     def __init__(self, *streams, binary=True, header_row_identifier=_EMPTY, header_row_end_identifier=_LINE_FEED,
                  footer_identifier=None, retain_first_header_row=True):
-        """Initialise a Stream wrapper object with header and footer identifiers to be utilised during the read process.
-
-        :param streams: one or more stream objects to be read. Each object can either be a stream object or some sort of
-        container object that implements a stream attribute and optionally, a length attribute. i.e.
-        :class:`streamly.Stream`.
-        :param binary: whether or not the underlying streams return bytes when read. If it returns text, set this to
-        False. Defaults to True.
-        :param header_row_identifier: the value to use to identify where the header row starts. If reading the stream
-        returns bytes, this should be a byte string. If there is no header, explicitly pass None. Defaults to an empty
-        byte string or empty string depending on the value of binary. I.e. the header row is encountered at the very
-        start of the stream.
-        :param header_row_end_identifier: the value to use to identify where the header row ends. If reading the stream
-        returns bytes, this should be a byte string. Defaults to a line feed byte string or a line feed string character
-        depending on the value of binary.
-        :param footer_identifier: the value to use to identify where the footer starts. Defaults to None, i.e. no
-        footer.
-        :param retain_first_header_row: whether or not the read method should retain the header row of the first stream.
-        Headers are removed from the second stream onwards regardless.
-        """
+        """Initialise a Stream wrapper object with header and footer identifiers referenced in the read process."""
         if not streams:
             raise ValueError("there must be at least one stream")
         self.streams = [{
@@ -81,22 +114,18 @@ class Streamly:
 
     @property
     def current_stream(self):
-        """Return the stream details as a dict that will be referenced on the next read operation."""
         return self.streams[self.current_stream_index]
 
     @property
     def is_first_stream(self):
-        """Return True if the current stream is the first stream."""
         return self.current_stream_index == 0
 
     @property
     def is_last_stream(self):
-        """Return True if the current stream is the last stream."""
         return self.current_stream_index == self.total_streams - 1
 
     @property
     def total_length_read(self):
-        """Return the total length read across all the streams."""
         return sum(stream["length_read"] for stream in self.streams)
 
     def _calc_end_of_prev_read(self, data, identifier):
@@ -210,12 +239,14 @@ class Streamly:
         return self._empty, raw_data if index == 0 else raw_data[index:]
 
     def read(self, size=8192):
-        """Read incrementally from the underlying streams. Automatically handle the removal of headers and footers based
+        """Read incrementally from the underlying streams.
+
+        Automatically handle the removal of headers and footers based
         on the instance properties and iterate through the underlying stream objects where there are more than one.
         Always return data of length, size, unless the underlying streams are exhausted. The subsequent read will return
         an empty byte string or empty string depending on self.binary.
 
-        :param size: the length to return
+        :param int size: the length to return
         :returns: either a byte string or string depending on what the underlying streams return when read
         """
         if self.end_reached and not self._data_backlog:
