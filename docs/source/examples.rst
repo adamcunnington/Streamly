@@ -35,7 +35,8 @@ Here is the simple, contrived example from the `GitHub README <https://github.co
     """
     )
 
-    wrapped_stream = streamly.Streamly(my_stream, header_row_identifier=b"Report Fields:\n",
+    wrapped_stream = streamly.Streamly(my_stream,
+                                       header_row_identifier=b"Report Fields:\n",
                                        footer_identifier=b"Grand")
 
     data = wrapped_stream.read(50)
@@ -49,7 +50,7 @@ HTTP Response
 
 `Please note that this example requires` `requests <http://docs.python-requests.org/en/master/>`_.
 
-As mentioned in :ref:`getting-started`, a common use case where Streamly can help is when dealing with an "unclean" HTTP response, i.e. a report returned by a digital marketing API. We'll use some test data from the `GitHub repository <https://github.com/adamcunnington/Streamly/tree/master/tests/data>`_ to demonstrate the use case here::
+As mentioned in :ref:`getting-started`, a common use case where Streamly can help is when dealing with an "unclean" HTTP response, i.e. a report returned by a digital marketing API. We'll use some test data from the `GitHub repository <https://github.com/adamcunnington/Streamly/tree/master/tests/data>`_ to demonstrate the use case here. Ensure you configure the ``output_file_path`` variable below::
 
     import gzip
 
@@ -72,13 +73,40 @@ As mentioned in :ref:`getting-started`, a common use case where Streamly can hel
                 fp.write(data)
                 data = wrapped_stream.read()
 
-Navigate to
+Navigate to ``output_file_path`` to see the output data.
+
 
 Merging Files
 -------------
 
-Another example would be use Streamly to merge files. Start by downloading the following files to a directory
+Another example would be use Streamly to merge files. For the purposes of demonstration, start by manually downloading the following files to the same directory of your choice:
+
+    * `test_data_1 <https://github.com/adamcunnington/Streamly/blob/master/tests/data/test_data_1.txt>`_
+    * `test_data_1 - page 2 <https://github.com/adamcunnington/Streamly/blob/master/tests/data/test_data_1 - page 2.txt>`_
+
+Then configure the ``files_dir_path`` variable below::
+
+    import os
 
     import streamly
 
-    with open(
+
+    files_dir_path = "/home/<username>/Downloads/"
+
+    part_1 = os.path.join(files_dir_path, "test_data_1.txt")
+    part_2 = os.path.join(files_dir_path, "test_data_1 - page 2.txt")
+
+    kwargs = {"encoding": "utf8", "newline": ""}
+
+    with open(part_1, **kwargs) as fp1:
+        with open(part_2, **kwargs) as fp2:
+            wrapped_streams = streamly.Streamly(fp1, fp2, binary=False, header_row_identifier="Fields:\n",
+                                                footer_identifier="Grand")
+            data = wrapped_streams.read(100000)  # Large read size as we're just reading from disk
+            if data:
+                with open(os.path.join(files_dir_path, "output.txt")) as fp_out:
+                    while data:
+                        fp_out.write(data)
+                        data = wrapped_streams.read(100000)
+
+Navigate to the output.txt file @ ``files_dir_path`` to see the output data.
