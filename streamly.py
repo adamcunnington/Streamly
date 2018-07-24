@@ -16,6 +16,7 @@ import logging
 class _Sentinel:
     pass
 
+
 _EMPTY = _Sentinel()
 _LINE_FEED = _Sentinel()
 
