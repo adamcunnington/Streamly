@@ -143,6 +143,7 @@ class Streamly:
         return accumulative_length
 
     def _chop(self, sequence, at_index):
+        # If the sequence is smaller than the index then there is no need to slice the list
         if len(sequence) <= at_index:
             return sequence, self._empty
         return sequence[:at_index], sequence[at_index:]
