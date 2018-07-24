@@ -108,7 +108,8 @@ Then configure the ``files_dir_path`` variable below::
             # Large read size as we're just reading from disk
             data = wrapped_streams.read(100000)
             if data:
-                with open(os.path.join(files_dir_path, "output.txt")) as fp_out:
+                with open(os.path.join(files_dir_path, "output.txt"),
+                          "f", **kwargs) as fp_out:
                     while data:
                         fp_out.write(data)
                         data = wrapped_streams.read(100000)
