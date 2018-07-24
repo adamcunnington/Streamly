@@ -250,6 +250,7 @@ class Streamly:
         :returns: either a byte string or string depending on what the underlying streams return when read
         """
         if self.end_reached and not self._data_backlog:
+            _logger.debug("End reached and backlog empty. Returning empty.")
             # The end of the streams may be reached but if there is data in the backlog, there is still work to be
             # done. If not, an empty byte string (or empty string) will signify to the caller that the stream is
             # exhausted.
@@ -259,23 +260,26 @@ class Streamly:
         while total_size < size:
             size_remaining = size - total_size
             if self._data_backlog:
+                _logger.debug("Data found on the backlog.")
                 # Data on the backlog must be prioritised. It's possible the stream is exhausted, and thus no more data
                 # to be read, but we need to return the backlog first.
                 processed_data, self._data_backlog = self._chop(self._data_backlog, size_remaining)
             elif self.end_reached:
-                _logger.debug("The end of the last stream has been reached")
+                _logger.debug("End of the final stream has been reached. Breaking out of loop.")
                 # We now know that the backlog is empty and the end of the streams are reached. Therefore, we can break
                 # out of the loop and return to the caller. Their subsequent call will be caught by the top-level if
                 # statement.
                 break
             elif self.current_stream["footer_found"]:
+                _logger.debug("Footer found. Ending current stream.")
                 self._end_stream()
                 continue
             else:
                 size_to_read = size_remaining - len(self._data_read_ahead) - len(self._end_of_prev_read)
+                _logger.debug("Reading data from the underlying stream...")
                 raw_data = self._read(size_to_read)
                 if not raw_data:
-                    _logger.debug("Underlying stream returned no data")
+                    _logger.debug("Underlying stream returned no data.")
                     self._end_stream()
                     continue
                 else:
