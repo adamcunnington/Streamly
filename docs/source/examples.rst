@@ -36,8 +36,7 @@ Here is the simple, contrived example from the `GitHub README <https://github.co
     )
 
     wrapped_stream = streamly.Streamly(my_stream,
-                                       header_row_identifier=b"Report Fields:\n",
-                                       footer_identifier=b"Grand")
+        header_row_identifier=b"Report Fields:\n", footer_identifier=b"Grand")
 
     data = wrapped_stream.read(50)
     while data:
@@ -58,13 +57,16 @@ As mentioned in :ref:`getting-started`, a common use case where Streamly can hel
     import streamly
 
 
-    output_file_path = "output.txt"  # change this to the location you want to write to
+    # change this to the location you want to write to
+    output_file_path = "output.txt"
 
-    url = "https://raw.githubusercontent.com/adamcunnington/Streamly/master/tests/data/test_data_1.txt"
+    url = ("https://raw.githubusercontent.com/adamcunnington/"
+           "Streamly/master/tests/data/test_data_1.txt")
     raw_stream = requests.get(url, stream=True).raw
-    decompressor = gzip.GzipFile(fileobj=raw_stream)  # raw.githubusercontent.com returns gzip encoded content
-    wrapped_stream = streamly.Streamly(decompressor, header_row_identifier=b"Fields:\n",
-                                       footer_identifier=b"Grand")
+    # raw.githubusercontent.com returns gzip encoded content
+    decompressor = gzip.GzipFile(fileobj=raw_stream)
+    wrapped_stream = streamly.Streamly(decompressor,
+        header_row_identifier=b"Fields:\n", footer_identifier=b"Grand")
 
     data = wrapped_stream.read()
     if data:
@@ -100,9 +102,11 @@ Then configure the ``files_dir_path`` variable below::
 
     with open(part_1, **kwargs) as fp1:
         with open(part_2, **kwargs) as fp2:
-            wrapped_streams = streamly.Streamly(fp1, fp2, binary=False, header_row_identifier="Fields:\n",
+            wrapped_streams = streamly.Streamly(fp1, fp2, binary=False,
+                                                header_row_identifier="Fields:\n",
                                                 footer_identifier="Grand")
-            data = wrapped_streams.read(100000)  # Large read size as we're just reading from disk
+            # Large read size as we're just reading from disk
+            data = wrapped_streams.read(100000)
             if data:
                 with open(os.path.join(files_dir_path, "output.txt")) as fp_out:
                     while data:
