@@ -9,7 +9,6 @@ Basic
 
 Here is the simple, contrived example from the `GitHub README <https://github.com/adamcunnington/Streamly/blob/master/README.rst>`_::
 
-    import requests
     import streamly
 
 
