@@ -29,10 +29,10 @@ Positional Argument(s)
 
 A stream can be anything with a read method that remembers its position between reads. Typically, this is an OS-level file or data from a network socket such as a HTTP response but Streamly does not care! The streams can either be all text or all bytes.
 
-In order for Streamly to meaningfully :ref:`log progress <logging>`, it must know the total length of the stream(s). This is not required for streamly to work but if the length is known (i.e. the web response includes a Content-Length header), you can create a :ref:`streamly.Stream <stream>` object, and then pass that as an arg to \*streams. For example, if the underlying stream object is a `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_ stream::
+In order for Streamly to meaningfully :ref:`log progress <logging>`, it must know the total length of the stream(s). This is not required for streamly to work but if the length is known (i.e. perhaps the web response includes a trustworthy Content-Length header), you can create a :ref:`streamly.Stream <stream>` object, and then pass that as an arg to \*streams. For example, if the underlying stream object is a `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_ stream::
 
     >>> my_stream = streamly.Stream(raw_stream.raw,
-                                    raw_stream.headers["Content-Type"])
+                                    int(raw_stream.headers["Content-Type"]))
     >>> wrapped_stream = streamly.Streamly(my_stream)
 
 .. _keyword_args:
@@ -97,7 +97,7 @@ Logging
 
 Streamly implements logging via `Python's standard library logging module <https://docs.python.org/3/library/logging.html>`_ and follows `best practice for library logging configuration <https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library>`_. You have two options for accessing the log messages.
 
-1. Access the Logger Directly
+a) Access the Logger Directly
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can get direct access to the library's logger like so::
@@ -119,7 +119,7 @@ In order to access the output messages, you will need to:
     >>> logger.addHandler(stream_handler)
     >>> logger.setLevel(logging.INFO)  # logger level threshold
 
-2. Via the Root Logger
+b) Via the Root Logger
 ^^^^^^^^^^^^^^^^^^^^^^
 
 However, more often than not, you will just want to attach a handler to the root logger object and allow the messages to propogate up through the logger objects. Again, you must set the appropriate threshold for message handling, either on the handler object or the logger object. For example::
