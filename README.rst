@@ -78,11 +78,10 @@ The below example writes a byte stream to a file, removing the unwanted header a
     wrapped_stream = streamly.Streamly(my_stream, header_row_identifier=b"Report Fields:\n",
                                        footer_identifier=b"Grand")
 
-    with open("output.csv", "wb") as fp:
-        data = wrapped_stream.read()
-        while data:
-            fp.write(data)
-            data = wrapped_stream.read()
+    data = wrapped_stream.read(50)
+    while data:
+        print(data)
+        data = wrapped_stream.read(50)
 
 
 Features
