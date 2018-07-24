@@ -24,7 +24,7 @@ Using Streamly is incredibly simple and generally consists of 2 steps:
 
 :ref:`Streamly <streamly>`'s constructor expects one or more stream positional argument followed by optional keyword arguments.
 
-Positional Arguments
+Positional Argument(s)
 """"""""""""""""""""
 
 A stream can be anything with a read method that remembers its position between reads. Typically, this is an OS-level file or data from a network socket such as a HTTP response but Streamly does not care! The streams can either be all text or all bytes.
