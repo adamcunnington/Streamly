@@ -25,7 +25,7 @@ Using Streamly is incredibly simple and generally consists of 2 steps:
 Positional Arguments
 """"""""""""""""""""
 
-A stream can be anything with a read method that remembers it's position between reads. Typically, this is an OS-level file or data from a network socket such as a HTTP response but Streamly does not care! The streams can either be all text or all bytes.
+A stream can be anything with a read method that remembers its position between reads. Typically, this is an OS-level file or data from a network socket such as a HTTP response but Streamly does not care! The streams can either be all text or all bytes.
 
 In order for Streamly to meaningfully :ref:`log progress <logging>`, it must know the total length of the stream(s). This is not required for streamly to work but if the length is known (i.e. the web response includes a Content-Length header), you can create a :ref:`streamly.Stream <stream>` object, and then pass that as an arg to \*streams. For example, if the underlying stream object is a `requests.Response <http://docs.python-requests.org/en/master/user/quickstart/#response-content>`_ stream::
 
@@ -48,7 +48,7 @@ The following keyword arguments impact the behaviour of the header and footer id
 
         If the ``header_row_end_identifer`` value is not found, .read() will return no data for the stream in question. See the :ref:`note <reading_writing_text>` below for a common pitfall.
 
-    * **footer_identifier** - Similarly to the ``header_row_identifier``, this parameter is used to locate the footer, in order to remove it. It defaults to ``None`` which assumes there is no footer to remove.
+    * **footer_identifier** - Similar to the ``header_row_identifier``, this parameter is used to locate the footer, in order to remove it. It defaults to ``None`` which assumes there is no footer to remove.
     * **retain_first_header_row** - As described in the ``header_row_identifier`` description above, if the header row can be located, it will be excluded from .read() operations on subsequent streams. By default, the header is included when the first stream is read. If it should be excluded, set ``retain_first_header_row=False``.
 
 .. _reading_writing_text:
@@ -56,8 +56,8 @@ The following keyword arguments impact the behaviour of the header and footer id
 
     With regards to reading and writing text using `open() <https://docs.python.org/3/library/functions.html#open>`_ (or similar interfaces), users should be aware of a common pitfall, unrelated to Streamly. Open's ``newline`` keyword argument defaults to None and the associated behaviour is as follows:
 
-        * When reading, `valid EOL characters <https://docs.python.org/3/glossary.html#term-universal-newlines>`_ are translated into \n before they are returned to the caller. `Incidentally, this is the reason why Streamly's default :ref:`header_row_end_identifier <_keyword_args>` is a representation of ``"\n"``.
-        * When writing, any ``"\n"`` characters are translated to the system default line separator, `os.linesep <https://docs.python.org/3/library/os.html#os.linesep>`_. `This doesn't affect Streamly but can lead to an unexpected discrepancy in file sizes`.
+        * When reading, `valid EOL characters <https://docs.python.org/3/glossary.html#term-universal-newlines>`_ are translated into ``"\n"`` before they are returned to the caller. Incidentally, this is the reason why Streamly's default :ref:`header_row_end_identifier <keyword_args>` is a representation of ``"\n"``.
+        * When writing, any ``"\n"`` characters are translated to the system default line separator, `os.linesep <https://docs.python.org/3/library/os.html#os.linesep>`_. `This doesn't affect Streamly's behaviour but can lead to an unexpected discrepancy in file sizes`.
 
     If you wish to avoid this translation behaviour, you can pass ``newline=""`` to open().
 
@@ -86,14 +86,19 @@ You would replace that with something like the following. Note that the first tw
     ...     with open("output.csv") as fp:
     ...         while data:
     ...             fp.write(data)
-    ...             data = raw_stream.read(8192)
+    ...             data = wrapped_stream.read(8192)
 
 .. _logging:
 
 Logging
 -------
 
-Streamly implements logging via `Python's standard library logging module <https://docs.python.org/3/library/logging.html>`_ and follows `best practice for library logging configuration <https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library>`_. If you wish to access the library's logger, you can do so with::
+Streamly implements logging via `Python's standard library logging module <https://docs.python.org/3/library/logging.html>`_ and follows `best practice for library logging configuration <https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library>`_. You have two options for accessing the log messages.
+
+1. Access the Logger Directly
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can get direct access to the library's logger like so::
 
     >>> import logging
     >>> logger = logging.getLogger("streamly")
@@ -112,7 +117,10 @@ In order to access the output messages, you will need to:
     >>> logger.addHandler(stream_handler)
     >>> logger.setLevel(logging.INFO)  # logger level threshold
 
-However, more often than not, you can just attach a handler to the root logger object and allow the messages to propogate up through the logger objects. Again, you must set the appropriate threshold for message handling, either on the handler object or the logger object. For example::
+2. Via the Root Logger
+^^^^^^^^^^^^^^^^^^^^^^
+
+However, more often than not, you will just want to attach a handler to the root logger object and allow the messages to propogate up through the logger objects. Again, you must set the appropriate threshold for message handling, either on the handler object or the logger object. For example::
 
     >>> root_logger = logging.getLogger(__name__)
     >>> stream_handler = logging.StreamHandler()

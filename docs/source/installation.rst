@@ -4,12 +4,12 @@
 Installation
 ============
 
-If you've done this kind of thing before, suffice to say that Streamly has been published to `PyPI <https://pypi.org/project/streamly>`_ and so it is installable under the name, **streamly**.
+If you've done this kind of thing before, suffice to say that Streamly has been published to `PyPI <https://pypi.org/project/streamly>`_ and so it is installable under the name, ``streamly``.
 
 Requirements
 ------------
 
-Streamly requires `Python 3.1 <https://www.python.org/downloads/>`_ or newer, and requires no dependencies.
+Streamly requires `Python 3.1 <https://www.python.org/downloads/>`_ or newer. It does not have any 3rd party dependencies.
 
 
 Installation
