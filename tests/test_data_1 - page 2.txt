@@ -1,6 +1,5 @@
 Fields:
 a,very,simple,csv,file
-start,of,the,second,file
 1,2,3,4,5
 1,2,3,4,5
 1,2,3,4,5
@@ -15,6 +14,6 @@ start,of,the,second,file
 1,2,3,4,5
 1,2,3,4,5
 1,2,3,4,5
-pretend,fake,ha,ha,ha
-Grand Total:
-random,footer,garbage
+1,2,3,4,5
+1,2,3,4,5
+Grand Total:,random,footer,garbage,
