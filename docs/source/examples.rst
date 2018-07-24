@@ -38,11 +38,10 @@ Here is the simple, contrived example from the `GitHub README <https://github.co
     wrapped_stream = streamly.Streamly(my_stream, header_row_identifier=b"Report Fields:\n",
                                        footer_identifier=b"Grand")
 
-    with open("output.csv", "wb") as fp:
-        data = wrapped_stream.read()
-        while data:
-            fp.write(data)
-            data = wrapped_stream.read()
+    data = wrapped_stream.read(50)
+    while data:
+        print(data)
+        data = wrapped_stream.read(50)
 
 
 HTTP Response
@@ -52,11 +51,34 @@ HTTP Response
 
 As mentioned in :ref:`getting-started`, a common use case where Streamly can help is when dealing with an "unclean" HTTP response, i.e. a report returned by a digital marketing API. We'll use some test data from the `GitHub repository <https://github.com/adamcunnington/Streamly/tree/master/tests/data>`_ to demonstrate the use case here::
 
+    import gzip
+
     import requests
+    import streamly
 
 
+    output_file_path = "output.txt"  # change this to the location you want to write to
+
+    url = "https://raw.githubusercontent.com/adamcunnington/Streamly/master/tests/data/test_data_1.txt"
+    raw_stream = requests.get(url, stream=True).raw
+    decompressor = gzip.GzipFile(fileobj=raw_stream)  # raw.githubusercontent.com returns gzip encoded content
+    wrapped_stream = streamly.Streamly(decompressor, header_row_identifier=b"Fields:\n",
+                                       footer_identifier=b"Grand")
+
+    data = wrapped_stream.read()
+    if data:
+        with open(output_file_path) as fp:
+            while data:
+                fp.write(data)
+                data = wrapped_stream.read()
+
+Navigate to
 
 Merging Files
 -------------
 
-Another example would be use Streamly to merge files.
+Another example would be use Streamly to merge files. Start by downloading the following files to a directory
+
+    import streamly
+
+    with open(
