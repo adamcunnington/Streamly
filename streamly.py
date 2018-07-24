@@ -27,7 +27,7 @@ _logger.addHandler(logging.NullHandler())
 class Stream:
     """Provide a simple object to represent a stream resource with a known length for use with :class:`Streamly`.
 
-    If the length is unknown, just pass the raw stream object directly to Streamly.
+    If the length is unknown, the user should just pass the raw stream object directly to Streamly.
 
     :param stream: the file-like object
     :param int length: the length of the stream
@@ -72,7 +72,8 @@ class Streamly:
     :ivar bool is_first_stream: ``True`` if the current stream is the first stream.
     :ivar bool is_last_stream: ``True`` if the current stream is the last stream.
     :ivar bool retain_first_header_row: See Parameters.
-    :ivar list streams: See Parameters.
+    :ivar list streams: the list of streams passed on instantiation but as dicts with items that are used to track
+        progress.
     :ivar int total_length: The total length of all the streams. If any stream's length is unknown, this value will be
         ``None``.
     :ivar int total_length_read: The total length read across all the streams.
