@@ -27,6 +27,19 @@ class MockLoggingHandler(logging.Handler):
         }
 
 
+_data_body = (
+b"""START,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+lorem,foo,bar,baz
+"""
+)
+
+
 _general_test_data = (
 b"""Header
 Metadata
@@ -36,19 +49,11 @@ Garabage
 
 Report Fields:
 col1,col2,col3,col4
-START,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-lorem,foo,bar,baz
-Grand Total:,0,0,1000,0
+%sGrand Total:,0,0,1000,0
 More
 Footer
 Garbage
-"""
+""" % _data_body
 )
 
 
