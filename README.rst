@@ -42,7 +42,7 @@ Install & Update:
 
 
 Example Usage
------
+-------------
 
 The below example writes a byte stream to a file, removing the unwanted header and footer details on the fly.
 
