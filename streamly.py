@@ -279,7 +279,7 @@ class Streamly:
             else:
                 size_to_read = size_remaining - len(self._data_read_ahead) - len(self._end_of_prev_read)
                 _logger.debug("Reading data from the underlying stream...")
-                raw_data = self._read(size_to_read)
+                raw_data = self._read(size_to_read)  # bug. size to read is 0 because of 2 lines above
                 if not raw_data:
                     _logger.debug("Underlying stream returned no data.")
                     self._end_stream()

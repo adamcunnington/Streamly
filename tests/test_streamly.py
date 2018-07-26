@@ -28,7 +28,8 @@ class MockLoggingHandler(logging.Handler):
 
 
 _data_body = (
-b"""START,foo,bar,baz
+b"""col1,col2,col3,col4
+START,foo,bar,baz
 lorem,foo,bar,baz
 lorem,foo,bar,baz
 lorem,foo,bar,baz
@@ -48,7 +49,6 @@ Unwanted
 Garabage
 
 Report Fields:
-col1,col2,col3,col4
 %sGrand Total:,0,0,1000,0
 More
 Footer
@@ -258,16 +258,61 @@ class TestStreamly(object):
         assert data == _general_test_data
 
     def test_read(self):
-        # ALWAYS: len() = max(read_size, len of test data)
+        test_data_length = len(_general_test_data)
 
-        # Following tests with just 1 read. Check that subsequent read returns empty for all cases
-            # just the data including header row
-            # nothing because header not found
-            # nothing because header row end identifier not found
-            # entire thing because no header identifier
-            # entire thing because footer identifier not found
+        # just the data including header row
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n",
+                                           footer_identifier=b"Grand")
+        data = wrapped_stream.read(test_data_length)
+        assert data == _data_body
+        assert not wrapped_stream.read()
+
+        # nothing because header not found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"N0t_Th3r3",
+                                           footer_identifier=b"Grand")
+        data = wrapped_stream.read(test_data_length)
+        assert not data
+        assert not wrapped_stream.read()
+
+        # nothing because header row end identifier not found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n",
+                                           header_row_end_identifier=b"\r\n",
+                                           footer_identifier=b"Grand", retain_first_header_row=False)
+        data = wrapped_stream.read(test_data_length)
+        assert not data
+        assert not wrapped_stream.read()
+
+        # entire thing because no header identifier
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=None)
+        data = wrapped_stream.read(test_data_length)
+        assert data == _general_test_data
+        assert not wrapped_stream.read()
+
+        # entire thing because footer identifier not found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=None, footer_identifier=b"N0t_Th3r3")
+        data = wrapped_stream.read(test_data_length)
+        assert data == _general_test_data
+        assert not wrapped_stream.read()
 
         # small reads - such that header would not be found in first while iteration
-            # with valid header
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n",
+                                           footer_identifier=b"Grand")
+        logger = logging.getLogger("streamly")
+        logger.addHandler(logging.StreamHandler())
+        logger.setLevel(logging.DEBUG)
+        output = wrapped_stream.read(10)
+        assert not output
+        data = wrapped_stream.read(10)
+        while data:
+            output += data
+            data = wrapped_stream.read(10)
+        assert output == _data_body
+
             # with valid grand
         pass
