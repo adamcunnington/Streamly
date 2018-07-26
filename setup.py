@@ -12,6 +12,12 @@ with open("LICENSE") as f:
 setuptools.setup(
     author="Adam Cunnington",
     author_email="adamcunnington.info@gmail.com",
+    classifiers=(
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3 :: Only"
+    ),
     description="",
     license=license,
     long_description=readme,
