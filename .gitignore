@@ -118,6 +118,9 @@ venv.bak/
 # PyCharm
 .idea/
 
-# Pipenv - as Streamly is a library, not an application
-Pipfile
+# Pipenv - as Streamly is a library, not an application, don't include the pinned versions
 Pipfile.lock
+
+# Test data output
+tests/output.*
+tests/data/output.*
