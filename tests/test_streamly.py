@@ -303,16 +303,10 @@ class TestStreamly(object):
         raw_stream = _general_byte_stream()
         wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n",
                                            footer_identifier=b"Grand")
-        logger = logging.getLogger("streamly")
-        logger.addHandler(logging.StreamHandler())
-        logger.setLevel(logging.DEBUG)
         output = wrapped_stream.read(10)
-        assert not output
         data = wrapped_stream.read(10)
         while data:
             output += data
+            print(data)
             data = wrapped_stream.read(10)
         assert output == _data_body
-
-            # with valid grand
-        pass
