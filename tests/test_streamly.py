@@ -83,14 +83,16 @@ class TestStreamly(object):
 
     def test_is_first_stream(self):
         raw_stream = _general_byte_stream()
-        wrapped_stream = streamly.Streamly(raw_stream, raw_stream)
+        raw_stream_2 = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, raw_stream_2)
         assert wrapped_stream.is_first_stream
         wrapped_stream.current_stream_index += 1
         assert not wrapped_stream.is_first_stream
 
     def test_is_last_stream(self):
         raw_stream = _general_byte_stream()
-        wrapped_stream = streamly.Streamly(raw_stream, raw_stream)
+        raw_stream_2 = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, raw_stream_2)
         assert not wrapped_stream.is_last_stream
         wrapped_stream.current_stream_index += 1
         assert wrapped_stream.is_last_stream
@@ -169,3 +171,16 @@ class TestStreamly(object):
         logger.setLevel(logging.INFO)
         wrapped_stream._log_progress()
         assert mock_handler.messages["INFO"]
+
+    def test__read(self):
+        raw_stream = _general_byte_stream()
+        raw_stream_2 = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream)
+        assert wrapped_stream._read(50) == raw_stream_2.read(50)
+        assert wrapped_stream.current_stream["length_read"] == 50
+
+    def test__remove_footer(self):
+        # test not found, even after read ahead
+        # test found after read ahead
+        # test found at very start
+        # test found
