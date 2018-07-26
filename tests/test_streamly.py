@@ -180,7 +180,94 @@ class TestStreamly(object):
         assert wrapped_stream.current_stream["length_read"] == 50
 
     def test__remove_footer(self):
-        # test not found, even after read ahead
-        # test found after read ahead
+        test_data_length = len(_general_test_data)
+
+        # footer not found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, footer_identifier=b"N0t_Th3r3")
+        data = wrapped_stream._read(test_data_length)
+        assert wrapped_stream._remove_footer(data) == _general_test_data
+
+        # footer found after read ahead
+        footer_identifier = b"Grand"
+        footer_identifier_position = _general_test_data.find(footer_identifier)
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, footer_identifier=footer_identifier)
+        data = wrapped_stream._read(footer_identifier_position + len(footer_identifier) - 2)
+        assert wrapped_stream._remove_footer(data) == _general_test_data[: footer_identifier_position]
+
         # test found at very start
-        # test found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, footer_identifier=b"Header")
+        data = wrapped_stream._read(len(_general_test_data))
+        assert not wrapped_stream._remove_footer(data)
+
+        # footer found
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, footer_identifier=b"Grand")
+        data = wrapped_stream._read(test_data_length)
+        assert wrapped_stream._remove_footer(data) == _general_test_data[: _general_test_data.find(footer_identifier)]
+
+    def test__remove_header(self):
+        test_data_length = len(_general_test_data)
+
+        # header found and header row end found, retain first header row
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n")
+        data = wrapped_stream._read(test_data_length)
+        end_of_prev, data = wrapped_stream._remove_header(data)
+        assert not end_of_prev
+        assert data == _general_test_data[_general_test_data.find(b"col1"):]
+
+        # header found and header row end found, don't retain first header row
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=b"Report Fields:\n",
+                                           retain_first_header_row=False)
+        data = wrapped_stream._read(test_data_length)
+        end_of_prev, data = wrapped_stream._remove_header(data)
+        assert not end_of_prev
+        assert data == _general_test_data[_general_test_data.find(b"START"):]
+
+        # header not found
+        raw_stream = _general_byte_stream()
+        header_row_identifier = b"N0t_Th3r3"
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=header_row_identifier)
+        data = wrapped_stream._read(test_data_length)
+        end_of_prev, data = wrapped_stream._remove_header(data)
+        assert end_of_prev == _general_test_data[-(len(header_row_identifier) - 1):]
+        assert not data
+
+        # header found and header row end not found
+        raw_stream = _general_byte_stream()
+        header_row_identifier = b"Report Fields:\n"
+        header_row_end_identifier = b"\r\n"
+        wrapped_stream = streamly.Streamly(raw_stream, header_row_identifier=header_row_identifier,
+                                           header_row_end_identifier=header_row_end_identifier,
+                                           retain_first_header_row=False)
+        data = wrapped_stream._read(test_data_length)
+        end_of_prev, data = wrapped_stream._remove_header(data)
+        assert end_of_prev == _general_test_data[-(len(header_row_end_identifier) - 1):]
+        assert not data
+
+        # header at the very start
+        raw_stream = _general_byte_stream()
+        wrapped_stream = streamly.Streamly(raw_stream)
+        data = wrapped_stream._read(test_data_length)
+        end_of_prev, data = wrapped_stream._remove_header(data)
+        assert not end_of_prev
+        assert data == _general_test_data
+
+    def test_read(self):
+        # ALWAYS: len() = max(read_size, len of test data)
+
+        # Following tests with just 1 read. Check that subsequent read returns empty for all cases
+            # just the data including header row
+            # nothing because header not found
+            # nothing because header row end identifier not found
+            # entire thing because no header identifier
+            # entire thing because footer identifier not found
+
+        # small reads - such that header would not be found in first while iteration
+            # with valid header
+            # with valid grand
+        pass
