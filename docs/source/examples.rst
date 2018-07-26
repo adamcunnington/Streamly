@@ -70,7 +70,7 @@ As mentioned in :ref:`getting_started`, a common use case where Streamly can hel
 
     data = wrapped_stream.read()
     if data:
-        with open(output_file_path) as fp:
+        with open(output_file_path, "wb") as fp:
             while data:
                 fp.write(data)
                 data = wrapped_stream.read()
