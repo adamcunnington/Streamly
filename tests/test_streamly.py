@@ -49,7 +49,7 @@ Unwanted
 Garabage
 
 Report Fields:
-%sGrand Total:,0,0,1000,0
+%bGrand Total:,0,0,1000,0
 More
 Footer
 Garbage
