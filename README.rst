@@ -1,3 +1,9 @@
+.. image:: https://codecov.io/gh/adamcunnington/Streamly/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/adamcunnington/Streamly
+
+.. image:: https://travis-ci.com/adamcunnington/Streamly.svg?branch=develop
+    :target: https://travis-ci.com/adamcunnington/Streamly
+
 ========
 Streamly
 ========
