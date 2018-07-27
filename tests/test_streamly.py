@@ -49,11 +49,11 @@ Unwanted
 Garabage
 
 Report Fields:
-%bGrand Total:,0,0,1000,0
+""" + _data_body + """Grand Total:,0,0,1000,0
 More
 Footer
 Garbage
-""" % _data_body
+"""
 )
 
 
