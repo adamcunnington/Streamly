@@ -1,0 +1,17 @@
+branches:
+  only:
+    - master
+    - develop
+language: python
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+install:
+  - pip install pytest pytest-cov codecov flake8 pylint
+script:
+  - flake8 streamly.py --ignore E501,F841
+  - pylint streamly.py --disable C0103,C0111,C0301,R0902,R0903
+  - flake8 tests/ --ignore E122,E501,F841
+  - python -m pytest --cov streamly tests/
+  - codecov
